@@ -1,0 +1,74 @@
+menu "FS Tools Configuration"
+
+	config FILE_SYSTEM_OPEN_FILES
+		int "Maximum FS files"
+		range 1 128
+		default 16
+		help
+			Maximum files that could be open at the same time.
+	
+	config USE_FS_LOG
+	    bool "Usar un FsLog"
+	    default "false"
+	    help
+			Para grabar logs en la SD card o en su defecto en el FS.
+	
+	config FS_LOG_FILE_SIZE
+		depends on USE_FS_LOG
+		int "Tam max de c/archivo del FS_LOG en Kbytes"
+		range 1 200
+		default 10
+							
+	config FS_LOG_CANT_FILES
+		depends on USE_FS_LOG
+		int "Cantidad de archivos del FS_LOG"
+		range 1 10
+		default 4
+		
+	config FS_FORMAT_IF_MOUNT_FAILED
+		depends on USE_FS_LOG
+        bool "Format the card if mount failed"
+        default n
+        help
+            If this config item is set, format_if_mount_failed will be set to true and the card will be formatted if
+            the mount has failed.
+
+	config USE_SD_CARD
+	    bool "Usar una tarjeta SD card"
+	    default "false"
+	    help
+			Para usar una SD card por SPI (ojo si ya se usa el SPI para otra cosa como el display)
+			Usar los mismos GPIO! 
+
+	config SD_SCLK_GPIO
+		depends on USE_SD_CARD
+		int "SCLK GPIO number"
+		range 0 46
+		default 18
+		help
+			CS del SD-CARD del SPI
+						            
+	config SD_MOSI_GPIO
+		depends on USE_SD_CARD
+		int "MOSI GPIO number"
+		range 0 46
+		default 23
+		help
+			mosi del SPI
+	
+	config SD_MISO_GPIO
+		depends on USE_SD_CARD
+		int "MISO GPIO number"
+		range -1 46
+		default 19
+		help
+			miso del SPI
+
+	config SD_CS_GPIO
+		depends on USE_SD_CARD
+		int "SD-CARD CS GPIO number"
+		range 0 46
+		default 5
+		help
+			sclk del SPI            
+endmenu
