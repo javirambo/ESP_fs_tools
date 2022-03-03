@@ -269,22 +269,16 @@ void sd_mkdir(const char *name)
 {
 	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
 	sprintf(buf, "%s/%s", sdCardMountPoint, name);
-	int err = mkdir(buf, 0775);
-	if (err == -1)
-		ESP_LOGD(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
-	else
-		ESP_LOGD(TAG, "Carpeta creada [%s]", buf);
+	mkdir(buf, 0775);
 }
 
 void spif_mkdir(const char *name)
 {
 	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
 	sprintf(buf, "%s/%s", spiffsMountPoint, name);
-	int err = mkdir(buf, 0775);
-	if (err == -1)
-		ESP_LOGD(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
-	else
-		ESP_LOGD(TAG, "Carpeta creada [%s]", buf);
+	mkdir(buf, 0775);
+	// mkdir no hace falta para SPIFFS (no se como los crea) pero anda!
+	// con SPIF da error, pero con SD-CARD deberia crearlos.
 }
 
 void fs_mkdir(const char *name)
@@ -304,7 +298,7 @@ void sd_delete(const char *name)
 	sprintf(buf, "%s/%s", sdCardMountPoint, name);
 	int err = unlink(buf);
 	if (err == -1)
-		ESP_LOGD(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
+		ESP_LOGE(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
 	else
 		ESP_LOGD(TAG, "Archivo eliminado[%s]", buf);
 }
@@ -315,7 +309,7 @@ void spif_delete(const char *name)
 	sprintf(buf, "%s/%s", spiffsMountPoint, name);
 	int err = unlink(buf);
 	if (err == -1)
-		ESP_LOGD(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
+		ESP_LOGE(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
 	else
 		ESP_LOGD(TAG, "Archivo eliminado[%s]", buf);
 }
@@ -341,4 +335,31 @@ uint32_t fs_file_size(FILE *fp)
 	int tam = fp->_offset;
 	fseek(fp, temp, SEEK_SET);
 	return tam;
+}
+
+/*
+ * A modo de test.
+ */
+void fs_file_dump(char *nombre)
+{
+	ESP_LOGI(TAG, "File dump: %s", nombre);
+	FILE *fp = fs_open_file(nombre, "r");
+	char buf[101];
+	size_t bytes_read;
+	if (fp)
+	{
+		fprintf(stdout, "begin>>>");
+		do
+		{
+			bytes_read = fread(buf, 1, 100, fp);
+			buf[bytes_read] = 0; // null terminator
+
+			//TODO ojo con los chars <32 y/o los archivos binarios!
+			fprintf(stdout, "%s", buf);
+
+		} while (bytes_read == 100);
+		fprintf(stdout, "<<<end\n");
+	}
+	else
+		ESP_LOGE(TAG, "No pude abrir el archivo %s", nombre);
 }

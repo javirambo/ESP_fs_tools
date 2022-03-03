@@ -2,8 +2,8 @@
  fsLog.h
 
  Guarda archivos de logs en el File System.
- Usará la micro-SD si está disponible.
- Si no existe la micro-SD solo grabará solo ERRORES.
+ Usarï¿½ la micro-SD si estï¿½ disponible.
+ Si no existe la micro-SD solo grabarï¿½ solo ERRORES.
 
  Permite extraer o enviar los logs mediante callbacks linea a linea,
  para poder llevarlos al puerto serie, wifi, etc.
@@ -61,4 +61,4 @@ void fsLog_startup(const char *format, ...); // escribe en un archivo separado, 
 void fsLog_forEachLineInStartup(ForEachLineCallback callback);
 void fsLog_forEachLineInBuffer(ForEachLineCallback callback);
 void fsLog(const char *format, ...);
-char* fsLog_getStatus();
+char* fsLog_getStatus(char * buf);

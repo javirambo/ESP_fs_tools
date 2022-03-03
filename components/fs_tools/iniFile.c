@@ -3,6 +3,12 @@
 
  Lectura de configuraciones desde un archivo .INI en el FS.
 
+ Usar asi:
+
+ ini_file_init("archivo.ini");
+ int i = ini_file_geti("clave", 300);
+ float f = ini_file_getf("clave", 300.5);
+
  Javier 2022
  */
 
@@ -76,35 +82,28 @@ static char* ini_file_get_value(ini_file_t *t, char *buf, size_t buf_len, char *
 	return NULL;
 }
 
-static void ini_file_dump(char *nombre)
-{
-	ESP_LOGI(TAG, "File dump: %s", nombre);
-	FILE *fp = fs_open_file(nombre, "r");
-	if (fp)
-	{
-		fprintf(stdout, "begin>>>\n");
-		char linea[300], *plin;
-		while ((plin = fgets(linea, sizeof(linea), fp)) != NULL)
-			fprintf(stdout, "%s", plin);
-		fprintf(stdout, "<<<end\n");
-	}
-	else
-		ESP_LOGE(TAG, "No pude abrir el archivo %s", nombre);
-}
-
 void ini_file_open(ini_file_t *t, char *archivo_ini)
 {
 	fs_init(); // abre FS de la SD card o, si no existe, del spif.
 	t->name = strdup(archivo_ini);
 	t->fp = fs_open_file(archivo_ini, "r");
+	if (t->fp == NULL && t->create_if_not_exists)
+	{
+		t->fp = fs_open_file(archivo_ini, "w");
+		fprintf(t->fp, "# archivo %s", archivo_ini);
+		fclose(t->fp);
+		t->fp = fs_open_file(archivo_ini, "r");
+	}
+	if (t->fp == NULL)
+		ESP_LOGE(TAG, "Error al abrir y/o crear archivo %s", archivo_ini);
 }
 
 void ini_file_close(ini_file_t *t)
 {
 	if (t->fp)
 		fclose(t->fp);
-#if 1
-	ini_file_dump(t->name);
+#if 0
+	fs_file_dump(t->name);
 #endif
 
 	if (t->name)
@@ -142,9 +141,9 @@ void ini_file_sets(ini_file_t *t, char *key, char *value)
 {
 	char *buf, linea[200], *plin;
 	int keylen = strlen(key);
-	int tam = fs_file_size(t->fp); // tama�o del archivo
+	int tam = fs_file_size(t->fp); // tamaño del archivo
 
-	// creo un buffer con tama�o original, mas la nueva clave/valor: "key=value\n" (por si no existe)
+	// creo un buffer con tamaño original, mas la nueva clave/valor: "key=value\n" (por si no existe)
 	buf = malloc(tam + keylen + strlen(value) + 2);
 
 	// tengo que buscar desde el principio:
@@ -161,7 +160,7 @@ void ini_file_sets(ini_file_t *t, char *key, char *value)
 				memcmp(linea, key, keylen) == 0 &&
 				linea[keylen] == '=')
 		{
-			// reemplazo lo que est� despues del '='
+			// reemplazo lo que está despues del '='
 			plin[keylen + 1] = 0;
 			strcat(plin, value);
 			strcat(plin, "\n");
@@ -169,7 +168,7 @@ void ini_file_sets(ini_file_t *t, char *key, char *value)
 		}
 		strcat(buf, plin);
 	}
-	// no encontr� la key, agrego una linea al final:
+	// no encontré la key, agrego una linea al final:
 	if (!encontrada)
 	{
 		strcat(buf, "\n");

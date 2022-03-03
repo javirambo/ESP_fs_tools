@@ -62,4 +62,11 @@ void app_main(void)
 	fsLog_startup("chau");
 	ESP_LOGD(TAG, "fSLog status: %s", fsLog_getStatus());
 
+	//-----------------------------
+	// las carpetas en SPIF no hace falta crearlas....anda igual!
+	FILE *f = fs_open_file("laconchatuma/config.ini", "w");
+	fputs("HOLA", f);
+	fclose(f);
+
+	fs_file_dump("laconchatuma/config.ini");
 }

@@ -37,3 +37,5 @@ void fs_mkdir(const char *name);
 FILE* fs_open_file(const char *name, const char *type);
 void fs_delete(const char *name);
 uint32_t fs_file_size(FILE *fp);
+
+void fs_file_dump(char *nombre);

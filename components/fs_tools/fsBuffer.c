@@ -18,10 +18,10 @@
 
 static const char *TAG = "fsBuffer";
 
-static const char KEY_INDEX[] = "fileIndexActual";
-static const char KEY_TOTAL[] = "totalFiles";
-static const char BUF_NAME[] = "buf.XX";
-static const char CFG_NAME[] = "buffers.ini";
+#define KEY_INDEX 	"fileIndexActual"
+#define KEY_TOTAL 	"totalFiles"
+#define BUF_NAME 	"buf.XX"
+#define CFG_NAME 	"buffers.ini"
 
 static int8_t fileIndexActual; // archivo que se esta escribiendo
 static char *bufFileName;      // full path a filename, template (XX) indica el numero de file.
@@ -42,15 +42,18 @@ static char* fsBuffer_getFileName(char *buf, int index)
 static void fsBuffer_storeConfig()
 {
 	ini_file_t ini;
+	ini.create_if_not_exists = true;
+	ESP_LOGD(TAG, "store");
 	ini_file_open(&ini, cfgFileName);
-
+	ESP_LOGD(TAG, "name=%s fp=%s", ini.name, (ini.fp==NULL?"null":"fp"));
 	ini_file_seti(&ini, KEY_INDEX, fileIndexActual);
-
+	ESP_LOGD(TAG, "set 1");
 	// dejo constancia en el archivo de configuracion, como leer los logs,
 	// por las dudas que se levanten desde una PC.
 	ini_file_seti(&ini, KEY_TOTAL, CONFIG_FS_LOG_CANT_FILES);
-
+	ESP_LOGD(TAG, "set 2");
 	ini_file_close(&ini);
+	ESP_LOGD(TAG, "close");
 }
 
 // Cambio de archivo. Voy al siguiente circularmente.
@@ -85,7 +88,7 @@ static void fsBuffer_initFile()
 }
 
 /**
- * Se necesita configurar el tamaño de los archivos (en bytes),
+ * Se necesita configurar el tamaÃ±o de los archivos (en bytes),
  * la cantidad de archivos,
  * y el nombre que distingue los diferentes buffers que puedan existir.
  *
@@ -115,7 +118,7 @@ void fsBuffer_init(const char *buffer_name)
 
 /**
  * Agrega texto al archivo actual.
- * Si se excede el tamaño máximo, sigue con otro archivo.
+ * Si se excede el tamaÃ±o mÃ¡ximo, sigue con otro archivo.
  */
 size_t fsBuffer_write(const char *txt, size_t len)
 {
@@ -127,7 +130,7 @@ size_t fsBuffer_write(const char *txt, size_t len)
 		fflush(f);
 		int filesize = f->_lbfsize;
 		fclose(f);
-		// si se excede el tamaño del archivo, cambia a siguiente.
+		// si se excede el tamaÃ±o del archivo, cambia a siguiente.
 		if (filesize > CONFIG_FS_LOG_FILE_SIZE)
 			fsBuffer_nextFile();
 	}

@@ -2,8 +2,8 @@
  fsLog.c
 
  Guarda archivos de logs en el File System.
- Usará la micro-SD si está disponible.
- Si no existe la micro-SD solo grabará solo ERRORES.
+ Usarï¿½ la micro-SD si estï¿½ disponible.
+ Si no existe la micro-SD solo grabarï¿½ solo ERRORES.
 
  Permite extraer o enviar los logs mediante callbacks linea a linea,
  para poder llevarlos al puerto serie, wifi, etc.
@@ -19,7 +19,7 @@
 
 static const char *TAG = "fsLog";
 
-// TAMAÑO DE LA LINEA DE LOG
+// TAMAï¿½O DE LA LINEA DE LOG
 #define TAM_BUF 250
 static const char STARTUP_LOG_FILENAME[] = "startup.log";
 static const char BASE_PATH[] = "LOGGER";
@@ -69,7 +69,7 @@ void fsLog_startup(const char *format, ...)
 }
 
 /*
- * Graba el LOG a donde esté habilitado
+ * Graba el LOG a donde estï¿½ habilitado
  * (sd-card, spif, y depende del modo diagnostico tambien)
  */
 void fsLog(const char *format, ...)
@@ -92,7 +92,7 @@ void fsLog(const char *format, ...)
 	// algunas cosas se graban...por ejemplo:
 	// -si es ERROR -> se graba (cualquier FS, tanto SD como SPIF)
 	// -si es INFO -> solo se graba en sd-card
-	// -si es VERBOSE y está habilitado el ModoDiagnostico -> se graba solo en sd-card
+	// -si es VERBOSE y estï¿½ habilitado el ModoDiagnostico -> se graba solo en sd-card
 	if (format[1] == 'E' ||
 			(is_sd_mounted() && format[1] == 'I') ||
 			(is_sd_mounted() && modoDiagnostico && format[1] == 'V'))
@@ -107,7 +107,10 @@ void fsLog(const char *format, ...)
 char* fsLog_getStatus(char *buf)
 {
 	sprintf(buf, "SPIFFS mounted:%c, SDFS mounted:%c, modoDiagnostico=%c, startupLogFileName=%s",
-			is_spif_mounted() ? 'Y' : 'N', is_sd_mounted() ? 'Y' : 'N', modoDiagnostico ? 'Y' : 'N', startupLogFileName);
+			is_spif_mounted() ? 'Y' : 'N',
+			is_sd_mounted() ? 'Y' : 'N',
+			modoDiagnostico ? 'Y' : 'N',
+			startupLogFileName);
 	return buf;
 }
 
