@@ -3,8 +3,8 @@ File system tools para ESP
 
 Pensado para usar el file system de flash o de una micro SD
 
-Si no existe una SD card, entonces usar� el FS de flash (SPIFFS)
-
+Si no existe una SD card, entonces usaré el FS de flash (SPIFFS)
+*
 ### fs_tools
 
 Todo un set de tools para FS, usando el FS de SD CARD por defecto (sino usará el SPIFFS)

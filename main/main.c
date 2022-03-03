@@ -17,6 +17,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <freertos/event_groups.h>
+#include <freertos/queue.h>
+#include <esp_task_wdt.h>
+#include <esp_log.h>
+#include <esp_event.h>
+#include <nvs_flash.h>
+
 #include "fsTools.h"
 #include "fsLog.h"
 #include "iniFile.h"
