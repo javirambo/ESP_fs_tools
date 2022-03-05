@@ -32,6 +32,12 @@
 
 static const char *TAG = "main";
 
+void callback1(char *line)
+{
+	fprintf(stdout, "%s", line);
+	fflush(stdout);
+}
+
 void app_main(void)
 {
 	ESP_ERROR_CHECK(nvs_flash_init());
@@ -58,9 +64,10 @@ void app_main(void)
 
 	//-----------------------------
 	fsLog_init();
-	fsLog_startup("Inicializando el sistema");
-	fsLog_startup("chau");
-	ESP_LOGD(TAG, "fSLog status: %s", fsLog_getStatus());
+	ESP_LOGI(FSLOG_STARTUP,"Inicializando el sistema");
+	ESP_LOGD(FSLOG_STARTUP,"chau");
+	char bu[222];
+	ESP_LOGD(TAG, "fSLog status: %s", fsLog_getStatus(bu));
 
 	//-----------------------------
 	// las carpetas en SPIF no hace falta crearlas....anda igual!
@@ -69,4 +76,29 @@ void app_main(void)
 	fclose(f);
 
 	fs_file_dump("laconchatuma/config.ini");
+
+	//-----------------------------
+
+	ESP_LOGD(TAG, "ESTE ES EL LOG STARTUP>>>>");
+	fsLog_forEachLineInStartup(callback1);
+	ESP_LOGD(TAG, "<<<<FIN");
+
+	//-------------------------------------------------------------------------------------------------
+	ESP_LOGV(FSLOG_DIAGNOS, "verbose %d", esp_random()); // nunca se graba
+	ESP_LOGD(FSLOG_DIAGNOS, "debug %d", esp_random()); // nunca se graba
+	ESP_LOGI(FSLOG_DIAGNOS, "info %d", esp_random());  // solo en modo diagnostico y en sd-card y solo este TAG
+	ESP_LOGW(FSLOG_DIAGNOS, "warn %d", esp_random());  // solo en SD-card  (y cualquier TAG)
+	ESP_LOGE(FSLOG_DIAGNOS, "error %d", esp_random()); // siempre  (y cualquier TAG)
+	//-------------------------------------------------------------------------------------------------
+	ESP_LOGV(TAG, "TAG verbose %d", esp_random()); 	   // nunca se graba
+	ESP_LOGD(TAG, "debug %d", esp_random()); // nunca se graba
+	ESP_LOGI(TAG, "info %d", esp_random());  // nunca se graba
+	ESP_LOGW(TAG, "warn %d", esp_random());  // solo en SD-card  (y cualquier TAG)
+	ESP_LOGE(TAG, "error %d", esp_random()); // siempre (y cualquier TAG)
+	//-------------------------------------------------------------------------------------------------
+
+	ESP_LOGD(TAG, "ESTE ES EL LOG CIRCULAR>>>>");
+	fsLog_forEachLineInBuffer(callback1);
+	ESP_LOGD(TAG, "<<<<FIN");
+
 }
