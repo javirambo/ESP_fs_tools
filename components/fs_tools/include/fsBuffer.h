@@ -15,13 +15,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-
-typedef void (*ForEachLineCallback)(char *line);
+#include "fsTools.h"
 
 void fsBuffer_init(const char *buffer_name);
 void fsBuffer_clear();
 size_t fsBuffer_write(const char *txt, size_t len);
 void fsBuffer_forEachLine(ForEachLineCallback callback);
-void fsBuffer_forEachLineFromFile(const char *filename, ForEachLineCallback callback);
 
 #endif // Fs_Buffer_h

@@ -11,6 +11,7 @@
  *
  * Javier 2022
  */
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include <esp_log.h>
 #include <esp_vfs.h>
 #include <esp_spiffs.h>
@@ -219,12 +220,12 @@ void sd_unmount()
 	sdfs_mounted = false;
 }
 
-inline bool is_sd_mounted()
+bool is_sd_mounted()
 {
 	return sdfs_mounted;
 }
 
-inline bool is_spif_mounted()
+bool is_spif_mounted()
 {
 	return spiffs_mounted;
 }
@@ -234,10 +235,11 @@ static FILE* open_file(const char *root, const char *name, const char *type)
 	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
 	sprintf(buf, "%s/%s", root, name);
 	FILE *f = fopen(buf, type);
+	// lo pongo en verbose porque sino el FsLog con los archivos circulares siempore muestrasn error
 	if (!f)
-		ESP_LOGE(TAG, "NO PUDE ABRIR EL ARCHIVO [%s]", buf);
+		ESP_LOGV(TAG, "NO PUDE ABRIR EL ARCHIVO [%s]", buf);
 	else
-		ESP_LOGD(TAG, "Archivo abierto OK [%s]", buf);
+		ESP_LOGV(TAG, "Archivo abierto OK [%s]", buf);
 	return f;
 }
 
@@ -288,30 +290,20 @@ void fs_mkdir(const char *name)
 		sd_mkdir(name);
 	else if (spiffs_mounted)
 		spif_mkdir(name);
-	else
-		ESP_LOGE(TAG, "No hay FS!");
 }
 
 void sd_delete(const char *name)
 {
 	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
 	sprintf(buf, "%s/%s", sdCardMountPoint, name);
-	int err = unlink(buf);
-	if (err == -1)
-		ESP_LOGE(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
-	else
-		ESP_LOGD(TAG, "Archivo eliminado[%s]", buf);
+	unlink(buf);
 }
 
 void spif_delete(const char *name)
 {
 	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
 	sprintf(buf, "%s/%s", spiffsMountPoint, name);
-	int err = unlink(buf);
-	if (err == -1)
-		ESP_LOGE(TAG, "mkdir(%s)=%d, %s", buf, err, strerror(errno));
-	else
-		ESP_LOGD(TAG, "Archivo eliminado[%s]", buf);
+	unlink(buf);
 }
 
 void fs_delete(const char *name)
@@ -321,8 +313,6 @@ void fs_delete(const char *name)
 		sd_delete(name);
 	else if (spiffs_mounted)
 		spif_delete(name);
-	else
-		ESP_LOGE(TAG, "No hay FS!");
 }
 
 /*
@@ -338,7 +328,7 @@ uint32_t fs_file_size(FILE *fp)
 }
 
 /*
- * A modo de test.
+ * A modo de test. Hace un dump de un archivo y lo muestra por stdout (serie?)
  */
 void fs_file_dump(char *nombre)
 {
@@ -354,12 +344,40 @@ void fs_file_dump(char *nombre)
 			bytes_read = fread(buf, 1, 100, fp);
 			buf[bytes_read] = 0; // null terminator
 
-			//TODO ojo con los chars <32 y/o los archivos binarios!
+			//TODO ojo con los chars <32 o los archivos binarios!
 			fprintf(stdout, "%s", buf);
 
 		} while (bytes_read == 100);
 		fprintf(stdout, "<<<end\n");
 	}
-	else
-		ESP_LOGE(TAG, "No pude abrir el archivo %s", nombre);
+}
+
+bool fs_file_exists(const char *filename)
+{
+	struct stat st;
+	char buf[CONFIG_VFS_SEMIHOSTFS_HOST_PATH_MAX_LEN];
+	if (sdfs_mounted)
+		sprintf(buf, "%s/%s", sdCardMountPoint, filename);
+	else if (spiffs_mounted)
+		sprintf(buf, "%s/%s", spiffsMountPoint, filename);
+	return !stat(buf, &st);
+}
+
+/*
+ * abre un archivo, y por cada linea llama el callback.
+ * (OJO que tiene que ser archivo de texto y no binario)
+ */
+void fs_forEachLineFromTextFile(const char *filename, ForEachLineCallback callback)
+{
+	// si no existe el archivo, esta bien, pero no lo abro porque sino loguea un error...
+	if (!fs_file_exists(filename))
+		return;
+	FILE *f = fs_open_file(filename, "r");
+	if (f)
+	{
+		char buf[500], *line;
+		while ((line = fgets(buf, sizeof(buf), f)) != 0)
+			callback(line);
+		fclose(f);
+	}
 }

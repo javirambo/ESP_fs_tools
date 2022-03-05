@@ -5,10 +5,9 @@
 
  Usar asi:
 
- ini_file_t t;
- ini_file_init(&t, "archivo.ini");
- int i = ini_file_geti(&t, "clave", 300);
- float f = ini_file_getf(&t, "clave", 300.5);
+ ini_file_init("archivo.ini");
+ int i = ini_file_geti("clave", 300);
+ float f = ini_file_getf("clave", 300.5);
 
  Javier 2022
  */
@@ -19,6 +18,7 @@ typedef struct
 {
 	char *name;
 	FILE *fp;
+	bool create_if_not_exists; // para crear .ini que todavia no existen
 } ini_file_t;
 
 void ini_file_open(ini_file_t *t, char *archivo_ini);

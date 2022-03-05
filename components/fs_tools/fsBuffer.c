@@ -43,17 +43,12 @@ static void fsBuffer_storeConfig()
 {
 	ini_file_t ini;
 	ini.create_if_not_exists = true;
-	ESP_LOGD(TAG, "store");
 	ini_file_open(&ini, cfgFileName);
-	ESP_LOGD(TAG, "name=%s fp=%s", ini.name, (ini.fp==NULL?"null":"fp"));
 	ini_file_seti(&ini, KEY_INDEX, fileIndexActual);
-	ESP_LOGD(TAG, "set 1");
 	// dejo constancia en el archivo de configuracion, como leer los logs,
 	// por las dudas que se levanten desde una PC.
 	ini_file_seti(&ini, KEY_TOTAL, CONFIG_FS_LOG_CANT_FILES);
-	ESP_LOGD(TAG, "set 2");
 	ini_file_close(&ini);
-	ESP_LOGD(TAG, "close");
 }
 
 // Cambio de archivo. Voy al siguiente circularmente.
@@ -69,7 +64,7 @@ static void fsBuffer_nextFile()
 
 	// ejemplo: /log/buf.01
 	bufFileName = fsBuffer_getFileName(bufFileName, fileIndexActual);
-	remove(bufFileName);
+	fs_delete(bufFileName);
 }
 
 // crea el archivo a usar
@@ -135,24 +130,9 @@ size_t fsBuffer_write(const char *txt, size_t len)
 			fsBuffer_nextFile();
 	}
 	else
-		ESP_LOGW(TAG, "Can't write log %s", bufFileName);
+		ESP_LOGW(TAG, "No pude escribir el %s", bufFileName);
 
 	return size;
-}
-
-// abre un archivo, y por cada linea llama el callback.
-void fsBuffer_forEachLineFromFile(const char *filename, ForEachLineCallback callback)
-{
-	FILE *f = fs_open_file(filename, "r");
-	if (f)
-	{
-		char buf[500], *line;
-		while ((line = fgets(buf, sizeof(buf), f)) != 0)
-			callback(line);
-		fclose(f);
-	}
-	else
-		ESP_LOGE(TAG, "No pude abrir el archivo %s", filename);
 }
 
 // Recorre todas las lineas de todos los archivos:
@@ -165,8 +145,8 @@ void fsBuffer_forEachLine(ForEachLineCallback callback)
 	char *file = strdup(bufFileName);
 	do
 	{
-		file = fsBuffer_getFileName(file, fileIndexActual);
-		fsBuffer_forEachLineFromFile((const char*) file, callback);
+		file = fsBuffer_getFileName(file, index);
+		fs_forEachLineFromTextFile((const char*) file, callback);
 		if (++index == CONFIG_FS_LOG_CANT_FILES)
 			index = 0;
 	} while (index != fileIndexActual);

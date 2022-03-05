@@ -16,6 +16,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+typedef void (*ForEachLineCallback)(char *line);
+
 //--para el spif--
 bool spif_init();
 bool is_spif_mounted();
@@ -39,3 +41,5 @@ void fs_delete(const char *name);
 uint32_t fs_file_size(FILE *fp);
 
 void fs_file_dump(char *nombre);
+bool fs_file_exists(const char *filename);
+void fs_forEachLineFromTextFile(const char *filename, ForEachLineCallback callback);
