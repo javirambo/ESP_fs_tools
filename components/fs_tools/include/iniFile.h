@@ -5,10 +5,12 @@
 
  Usar asi:
 
- ini_file_init("archivo.ini");
- int i = ini_file_geti("clave", 300);
- float f = ini_file_getf("clave", 300.5);
-
+    ini_file_t ini;
+    ini_file_open(&ini, "config.ini");
+    int i   = ini_file_geti(&ini, "clave", 300);
+    float f = ini_file_getf(&ini, "clave", 300.5);
+    ini_file_close(&ini);
+    
  Javier 2022
  */
 #pragma once
