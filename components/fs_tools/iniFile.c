@@ -3,11 +3,7 @@
 
  Lectura de configuraciones desde un archivo .INI en el FS.
 
- Usar asi:
-
- ini_file_init("archivo.ini");
- int i = ini_file_geti("clave", 300);
- float f = ini_file_getf("clave", 300.5);
+ Ver el H para como usar...
 
  Javier 2022
  */
